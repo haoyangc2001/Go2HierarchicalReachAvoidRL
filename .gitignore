@@ -1,0 +1,12 @@
+# Python 虚拟环境 
+venv/ 
+env/ 
+# 缓存文件 
+__pycache__/ 
+*.pyc 
+# 环境变量文件 
+.env 
+# 系统文件（Mac） 
+.DS_Store 
+# 系统文件（Windows） 
+Thumbs.db
