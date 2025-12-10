@@ -189,16 +189,79 @@ Reach-Avoid 强化学习算法是专为避障导航任务设计的 PPO（Proxima
 
 ### 安装步骤
 
-1. 克隆项目仓库
-2. 安装依赖项：`pip install -r requirements.txt`
-3. 配置 Isaac Gym 环境
-4. 准备低层级预训练模型
+#### 系统要求
+- **操作系统**：推荐 Ubuntu 18.04 或更高版本
+- **GPU**：NVIDIA GPU
+- **驱动版本**：推荐 525 或更高版本
+
+#### 详细安装步骤
+
+1. **克隆项目仓库**
+   ```bash
+   git clone https://github.com/haoyangc2001/Go2HierarchicalReachAvoidRL.git
+   cd Go2HierarchicalReachAvoidRL
+   ```
+
+2. **创建虚拟环境（推荐使用 Conda）**
+   ```bash
+   # 安装 Miniconda（如果未安装）
+   mkdir -p ~/miniconda3
+   wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
+   bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+   rm ~/miniconda3/miniconda.sh
+   
+   # 初始化 Conda
+   ~/miniconda3/bin/conda init --all
+   source ~/.bashrc
+   
+   # 创建并激活虚拟环境
+   conda create -n go2-rl python=3.8
+   conda activate go2-rl
+   ```
+
+3. **安装依赖项**
+   
+   - **安装 PyTorch**
+     ```bash
+     conda install pytorch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 pytorch-cuda=12.1 -c pytorch -c nvidia
+     ```
+   
+   - **安装 Isaac Gym**
+     ```bash
+     # 1. 从 NVIDIA 官网下载 Isaac Gym：https://developer.nvidia.com/isaac-gym
+     # 2. 解压到当前项目目录下的 isaacgym 文件夹
+     
+     # 安装 Isaac Gym Python 绑定
+     cd isaacgym/python
+     pip install -e .
+     
+     # 验证安装（可选）
+     cd examples
+     python 1080_balls_of_solitude.py
+     ```
+   
+   - **安装项目依赖**
+     ```bash
+     # 返回项目根目录
+     cd ../..
+     cd legged_gym_go2
+     pip install -e .
+     ```
+   
+   - **安装其他依赖**
+     ```bash
+     pip install numpy matplotlib torchvision
+     ```
+
 
 ## 使用说明
 
 ### 运行训练脚本
 
+确保已经激活虚拟环境并配置好环境变量后，运行以下命令：
+
 ```bash
+# 从项目根目录运行
 python legged_gym_go2/legged_gym/scripts/train_reach_avoid.py
 ```
 
@@ -211,6 +274,35 @@ python legged_gym_go2/legged_gym/scripts/train_reach_avoid.py
 | --sim_device | 仿真设备 | cuda:1 |
 | --compute_device_id | 计算设备 ID | 1 |
 | --sim_device_id | 仿真设备 ID | 1 |
+| --task | 任务名称（固定为 go2） | go2 |
+| --resume | 是否从 checkpoint 恢复训练 | False |
+| --experiment_name | 实验名称 | high_level_go2 |
+| --run_name | 运行名称 | 自动生成时间戳 |
+| --num_envs | 并行训练环境数量 | 32 |
+| --seed | 随机种子 | 42 |
+| --max_iterations | 最大训练迭代次数 | 10000 |
+
+### 示例命令
+
+#### 基本训练
+```bash
+python legged_gym_go2/legged_gym/scripts/train_reach_avoid.py
+```
+
+#### 无头模式训练（更高效率）
+```bash
+python legged_gym_go2/legged_gym/scripts/train_reach_avoid.py --headless=true
+```
+
+#### 使用不同 GPU
+```bash
+python legged_gym_go2/legged_gym/scripts/train_reach_avoid.py --rl_device=cuda:0 --sim_device=cuda:0 --compute_device_id=0 --sim_device_id=0
+```
+
+#### 恢复训练
+```bash
+python legged_gym_go2/legged_gym/scripts/train_reach_avoid.py --resume=true --experiment_name=high_level_go2
+```
 
 ### 配置文件
 
@@ -353,19 +445,3 @@ train_cfg.policy.actor_hidden_dims = [512, 512, 512, 512]  # Actor 网络
 3. **搜索救援**：在复杂环境中搜索目标
 4. **环境监测**：在特定区域内进行环境监测
 
-## 许可证
-
-[MIT License](LICENSE)
-
-## 致谢
-
-- Unitree Robotics 提供 Go2 机器人模型
-- NVIDIA Isaac Gym 提供高性能仿真环境
-- RSL-RL 提供强化学习算法基础
-
-## 联系方式
-
-如有问题或建议，请通过以下方式联系：
-
-- 项目地址：https://github.com/your-username/Go2HierarchicalReachAvoidRL
-- 电子邮件：your-email@example.com
