@@ -9,6 +9,7 @@ Usage:
     python plot_training_results.py <log_file_path> [options]
 
 Example:
+    python plot_training_results.py
     python plot_training_results.py logs/high_level_go2/20260106-104432/training.log
 """
 
@@ -377,12 +378,20 @@ Examples:
         """
     )
 
-    parser.add_argument('log_file', type=str, default = 'logs/high_level_go2/20260106-104432/training.log', help='Path to the training log file')
+    parser.add_argument(
+        'log_file',
+        type=str,
+        nargs='?',
+        default='/home/caohy/repositories/Go2HierarchicalRewardShapingRL/logs/high_level_go2_Reward_Shaping/成功率收敛0.55_成本收敛78/training.log',
+        help='Path to the training log file',
+    )
     parser.add_argument('--output-dir', type=str, help='Directory to save plots (default: same as log file)')
     parser.add_argument('--all-metrics', action='store_true', help='Generate comprehensive plots of all metrics')
     parser.add_argument('--no-summary', action='store_true', help='Skip generating summary report')
 
     args = parser.parse_args()
+    if not args.all_metrics:
+        args.all_metrics = True
 
     # Validate log file path
     log_file_path = Path(args.log_file)
