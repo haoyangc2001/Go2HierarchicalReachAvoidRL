@@ -14,8 +14,8 @@ Go2 Hierarchical Reach-Avoid RL 是一个基于强化学习的机器人导航系
 - **输入**：机器人状态（关节角度、速度、IMU 数据等）和速度指令
 - **输出**：关节目标位置或力矩
 - **文件位置**：
-  - 环境封装：`legged_gym/envs/go2/go2_env.py`
-  - 低层级策略加载：`legged_gym/envs/go2/hierarchical_go2_env.py` 中的 `_load_low_level_policy` 方法
+  - 环境封装：`legged_gym_go2/legged_gym/envs/go2/go2_env.py`
+  - 低层级策略加载：`legged_gym_go2/legged_gym/envs/go2/hierarchical_go2_env.py` 中的 `_load_low_level_policy` 方法
 
 #### 高层级（Navigation）
 - **功能**：将环境观测转换为速度指令，实现避障导航
@@ -23,17 +23,17 @@ Go2 Hierarchical Reach-Avoid RL 是一个基于强化学习的机器人导航系
 - **输入**：环境观测（机器人位置、障碍物信息、目标位置、速度等）
 - **输出**：速度指令（线速度和角速度）
 - **文件位置**：
-  - 导航环境：`legged_gym/envs/go2/high_level_navigation_env.py`
-  - 高层级配置：`legged_gym/envs/go2/high_level_navigation_env.py` 中的 `HighLevelNavigationConfig` 类
+  - 导航环境：`legged_gym_go2/legged_gym/envs/go2/high_level_navigation_env.py`
+  - 高层级配置：`legged_gym_go2/legged_gym/envs/go2/high_level_navigation_env.py` 中的 `HighLevelNavigationConfig` 类
 
 #### 层级连接机制
 - **动作重复机制**：高层级输出的速度指令在低层级重复执行多次
 - **参数配置**：通过 `high_level_action_repeat` 参数控制，默认为 1
-- **文件位置**：`legged_gym/envs/go2/hierarchical_go2_env.py` 中的 `low_level_action_repeat` 属性
+- **文件位置**：`legged_gym_go2/legged_gym/envs/go2/hierarchical_go2_env.py` 中的 `low_level_action_repeat` 属性
 
 #### 分层环境封装
 - **统一接口**：`HierarchicalVecEnv` 类封装了分层环境，提供标准的 RL 环境接口
-- **文件位置**：`legged_gym/scripts/train_reach_avoid.py` 中的 `HierarchicalVecEnv` 类
+- **文件位置**：`legged_gym_go2/legged_gym/scripts/train_reach_avoid.py` 中的 `HierarchicalVecEnv` 类
 - **核心方法**：`reset()`、`step()`、`close()`
 
 ### 🧠 2. Reach-Avoid 强化学习算法
@@ -51,7 +51,7 @@ Reach-Avoid 强化学习算法是专为避障导航任务设计的 PPO（Proxima
 
 ##### ReachAvoidPPO 类
 - **功能**：实现完整的 Reach-Avoid PPO 算法
-- **文件位置**：`rsl_rl/algorithms/reach_avoid_ppo.py`
+- **文件位置**：`rsl_rl/rsl_rl/algorithms/reach_avoid_ppo.py`
 - **核心方法**：
   - `act()`：根据观测生成动作
   - `update()`：更新策略网络
@@ -64,7 +64,7 @@ Reach-Avoid 强化学习算法是专为避障导航任务设计的 PPO（Proxima
   - 考虑了 reach 和 avoid 双重目标
   - 基于 JAX 参考实现的 PyTorch 移植
   - 支持多环境并行计算
-- **文件位置**：`rsl_rl/algorithms/reach_avoid_ppo.py` 中的 `_calculate_reach_gae` 函数
+- **文件位置**：`rsl_rl/rsl_rl/algorithms/reach_avoid_ppo.py` 中的 `_calculate_reach_gae` 函数
 
 ##### 经验回放缓冲区
 - **功能**：存储和管理训练数据
@@ -73,7 +73,7 @@ Reach-Avoid 强化学习算法是专为避障导航任务设计的 PPO（Proxima
   - 存储 `g_values` 和 `h_values` 用于避障任务
   - 支持批量采样和多轮训练
   - 实现了自定义的优势函数计算
-- **文件位置**：`rsl_rl/algorithms/reach_avoid_ppo.py` 中的 `ReachAvoidBuffer` 类
+- **文件位置**：`rsl_rl/rsl_rl/algorithms/reach_avoid_ppo.py` 中的 `ReachAvoidBuffer` 类
 
 ##### 数据批次处理
 - **功能**：将经验数据转换为训练批次
@@ -82,7 +82,7 @@ Reach-Avoid 强化学习算法是专为避障导航任务设计的 PPO（Proxima
   - 封装了训练所需的所有数据
   - 支持扁平化数据视图
   - 便于批量采样和训练
-- **文件位置**：`rsl_rl/algorithms/reach_avoid_ppo.py` 中的 `ReachAvoidBatch` 类
+- **文件位置**：`rsl_rl/rsl_rl/algorithms/reach_avoid_ppo.py` 中的 `ReachAvoidBatch` 类
 
 #### 2.3 算法更新流程
 
@@ -125,7 +125,7 @@ Reach-Avoid 强化学习算法是专为避障导航任务设计的 PPO（Proxima
   2. 记录首次成功到达的时间步
   3. 检查在成功前是否发生碰撞（`h_values >= 0`）
   4. 成功率 = （成功到达目标且未碰撞的环境数）/ 总环境数
-- **文件位置**：`legged_gym/scripts/train_reach_avoid.py` 中的 `compute_reach_avoid_success_rate` 函数
+- **文件位置**：`legged_gym_go2/legged_gym/scripts/train_reach_avoid.py` 中的 `compute_reach_avoid_success_rate` 函数
 
 #### 2.6 与标准 PPO 的区别
 
@@ -173,10 +173,10 @@ Reach-Avoid 强化学习算法是专为避障导航任务设计的 PPO（Proxima
 
 | 组件 | 描述 | 位置 |
 |------|------|------|
-| HierarchicalGO2Env | 分层环境封装 | `legged_gym/envs/go2/hierarchical_go2_env.py` |
-| ReachAvoidPPO | 避障强化学习算法 | `rsl_rl/algorithms/reach_avoid_ppo.py` |
-| ActorCritic | 策略网络架构 | `rsl_rl/modules/actor_critic.py` |
-| HighLevelNavigationEnv | 高层级导航封装 | `legged_gym/envs/go2/high_level_navigation_env.py` |
+| HierarchicalGO2Env | 分层环境封装 | `legged_gym_go2/legged_gym/envs/go2/hierarchical_go2_env.py` |
+| ReachAvoidPPO | 避障强化学习算法 | `rsl_rl/rsl_rl/algorithms/reach_avoid_ppo.py` |
+| ActorCritic | 策略网络架构 | `rsl_rl/rsl_rl/modules/actor_critic.py` |
+| HighLevelNavigationEnv | 高层级导航封装 | `legged_gym_go2/legged_gym/envs/go2/high_level_navigation_env.py` |
 
 ### 🏗️ 网络架构
 
@@ -186,6 +186,8 @@ Reach-Avoid 强化学习算法是专为避障导航任务设计的 PPO（Proxima
 - 初始化噪声：标准差为 0.1 的高斯噪声
 
 ## 📦 环境配置
+
+Reach-Avoid PPO 的完整算法设计、价值目标、策略损失和网络结构说明见 `ALGORITHM_DESIGN.md`。
 
 ### 📥 安装步骤
 
@@ -453,8 +455,8 @@ iter 00001 | success 0.000 | policy_loss -0.00123 | value_loss 0.12345 | Vmean 0
 
 ## 📁 项目结构
 
-```
-Go2HierarchicalReachAvoidRL/
+```text
+./
 ├── legged_gym_go2/
 │   ├── legged_gym/
 │   │   ├── envs/
@@ -469,6 +471,7 @@ Go2HierarchicalReachAvoidRL/
 │   │   │   ├── plot_env_layout.py              # 环境布局可视化脚本
 │   │   │   └── test_reach_avoid.py             # 生成轨迹并保存到JSON文件的测试脚本
 │   │   └── utils/
+├── rsl_rl/
 │   └── rsl_rl/
 │       ├── algorithms/
 │       │   └── reach_avoid_ppo.py              # 避障 PPO 算法
