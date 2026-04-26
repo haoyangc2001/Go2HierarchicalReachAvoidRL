@@ -1,8 +1,10 @@
 # Go2 Hierarchical Reach-Avoid RL
 
-<video src="logs/1.mp4" controls width="100%"></video>
+<p align="center">
+  <img src="logs/1.gif" alt="Go2 Hierarchical Reach-Avoid RL demo">
+</p>
 
-[Demo video](logs/1.mp4)
+[Full demo video](logs/1.mp4)
 
 ## 📋 项目概述
 
