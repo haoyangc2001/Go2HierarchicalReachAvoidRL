@@ -1,5 +1,9 @@
 # Go2 Hierarchical Reach-Avoid RL
 
+<video src="logs/1.mp4" controls width="100%"></video>
+
+[Demo video](logs/1.mp4)
+
 ## 📋 项目概述
 
 Go2 Hierarchical Reach-Avoid RL 是一个基于强化学习的机器人导航系统，专为 Unitree Go2 机器人设计。该项目实现了一个分层控制架构，结合了预训练的低层级运动策略和可训练的高层级导航策略，使机器人能够在复杂环境中安全导航并到达目标位置。
