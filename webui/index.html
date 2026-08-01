@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Hierarchical Minimum-Cost Reach-Avoid Learning for Safe Quadruped Navigation"
+    />
+    <title>Hierarchical MCRA | Safe Quadruped Navigation</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23172326'/%3E%3Cpath d='M12 48V16h8l12 18 12-18h8v32h-8V29L33 46h-2L20 29v19z' fill='%23f5f8f8'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [['\\(', '\\)']],
+          displayMath: [['\\[', '\\]']],
+        },
+        chtml: { displayAlign: 'left' },
+      };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="scroll-progress" aria-hidden="true"></div>
+
+    <header class="site-nav" data-nav>
+      <div class="nav-shell">
+        <a class="wordmark" href="#top" aria-label="返回顶部">
+          <span class="wordmark-mark">MCRA</span>
+          <span class="wordmark-copy">QUADRUPED NAVIGATION</span>
+        </a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-menu" data-nav-toggle>
+          <i data-lucide="menu" aria-hidden="true"></i>
+          <span class="sr-only">打开导航</span>
+        </button>
+        <nav class="nav-menu" id="nav-menu" aria-label="页面导航" data-nav-menu>
+          <a class="nav-link" href="#problem">问题</a>
+          <a class="nav-link" href="#method">方法</a>
+          <a class="nav-link" href="#policy">机制</a>
+          <a class="nav-link nav-link--highlight" href="#evidence">实机证据</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-content page-shell">
+          <div class="hero-copy reveal is-visible">
+            <h1 id="hero-title">Hierarchical Minimum-Cost Reach-Avoid Learning for Safe Quadruped Navigation</h1>
+            <p class="hero-deck">面向复杂真实环境的预算感知、安全四足机器人自主导航。</p>
+          </div>
+          <div class="hero-showcase reveal" aria-label="HD-MCRA 项目总览">
+            <div class="hero-video-panel">
+              <video muted loop playsinline autoplay preload="metadata" aria-label="AGIROS 四足机器人实机导航视频">
+                <source src="assets/agiro-demo.mp4" type="video/mp4" />
+              </video>
+            </div>
+            <div class="hero-overview">
+              <p>研究将四足机器人在复杂环境中的导航统一为 <strong>Minimum-Cost Reach-Avoid</strong>：在到达目标、全程避险的同时，最小化累计执行成本。</p>
+              <p><strong>HD-MCRA</strong> 以预算条件化高层策略协调安全可行性与效率，并结合鲁棒低层速度跟踪和数据驱动安全/成本裕度完成闭环执行。</p>
+              <p>困难 IsaacGym 环境中，导航成功率提升约 <em>20%</em>、执行成本降低约 <em>30%</em>；AGIROS 实机展示进一步验证了系统的真实运行能力。</p>
+            </div>
+          </div>
+        </div>
+        <a class="hero-scroll" href="#problem" aria-label="查看项目问题建模">
+          <span>SCROLL TO EXPLORE</span>
+          <i data-lucide="arrow-down" aria-hidden="true"></i>
+        </a>
+      </section>
+
+      <section class="section problem" id="problem" aria-labelledby="problem-title">
+        <div class="page-shell">
+          <div class="problem-header reveal">
+            <h2 id="problem-title">问题定义：从偏好调参到轨迹级 MCRA 优化</h2>
+            <p>目标是在到达目标、全程避险与最小化累计执行成本之间，建立直接、可计算的统一任务定义。</p>
+          </div>
+
+          <div class="problem-grid">
+            <div class="problem-limitations reveal">
+              <p class="problem-label">传统方案的局限</p>
+              <div class="limitation-list" aria-label="传统方法的局限">
+                <article class="limitation-item">
+                  <p class="limitation-name">Reward Weighting</p>
+                  <p>将到达、安全与成本折为固定权重的加性奖励；权重变化会改变策略偏好，不能直接表达“安全到达后再最小化成本”。</p>
+                </article>
+                <article class="limitation-item">
+                  <p class="limitation-name">CMDP</p>
+                  <p>将累计成本改为预设阈值；阈值过低会使任务不可行，过高又会削弱约束，且它只能满足预算上限，不能直接寻找最小执行成本。</p>
+                </article>
+                <article class="limitation-item">
+                  <p class="limitation-name">Deterministic Reachability</p>
+                  <p>能表达轨迹级到达与避险，但通常依赖确定性或简化动力学，难以直接覆盖四足机器人的闭环轨迹偏差与成本超支。</p>
+                </article>
+              </div>
+            </div>
+
+            <div class="mcra-solution reveal">
+              <p class="problem-label">MCRA 的统一建模</p>
+              <p class="solution-overview">我们将高层导航直接建模为最小成本可达规避问题：在策略产生的随机闭环轨迹上，同时要求到达目标、全程安全，并在满足这两个条件的可行轨迹中最小化累计执行成本。</p>
+              <p class="mdp-definition">高层决策过程写作 \( \mathcal{M} = \langle \mathcal{X}, \mathcal{U}^{\mathrm{high}}, P, c, \rho_0 \rangle \)，其中状态包含机器人与环境观测，动作为基座速度命令，\(c\) 为执行成本。</p>
+              <div class="math-model" role="group" aria-label="最小成本可达规避优化问题：最小化从零到终止时刻的累计执行成本，约束为终点属于目标集、全过程不进入不安全集、状态按转移模型演化。">
+                \[
+                \begin{aligned}
+                \min_{\pi, T}\quad & \sum_{t=0}^{T-1} c\bigl(x_t, \pi(x_t)\bigr) \\
+                \text{s.t.}\quad & x_T \in G, \\
+                & x_t \notin F, \quad \forall t \in \{0, \ldots, T\}, \\
+                & x_{t+1} \sim P\bigl(\cdot \mid x_t, \pi(x_t)\bigr).
+                \end{aligned}
+                \]
+              </div>
+              <p class="model-notes"><span>\(G\)</span> 目标集 <span>\(F\)</span> 碰撞或安全违规诱导的不安全集 <span>\(c\)</span> 累计执行成本</p>
+              <p class="formulation-conclusion">安全与到达不再是奖励偏好或事后阈值，而是与最小累计成本共同构成轨迹级任务要求。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section method" id="method" aria-labelledby="method-title">
+        <div class="page-shell">
+          <div class="method-header reveal">
+            <h2 id="method-title">让 MCRA 可用于四足机器人</h2>
+            <p>四足机器人的关节级控制、接触动力学与真实执行偏差，不能直接套用抽象的 MCRA 求解器。HD-MCRA 以四项连续机制，将轨迹级任务要求转化为可学习、可执行且可鲁棒部署的导航控制闭环。</p>
+          </div>
+
+          <div class="method-sequence">
+            <article class="method-section reveal">
+              <h3>增广状态：把全程安全与预算写入当前决策</h3>
+              <p>原始观测只能描述当前机器人与环境，无法记录此前是否发生安全违规，也无法表达剩余可用预算。我们将高层状态增广为 \( \hat{x}_t = (x_t, y_t, z_t) \)：\(y_t\) 累积编码轨迹安全状态，\(z_t\) 跟踪剩余成本预算。</p>
+              <div class="method-math">
+                \[
+                \hat{x}_t = (x_t, y_t, z_t), \qquad
+                z_{t+1} = z_t - c(x_t, u_t).
+                \]
+              </div>
+              <p class="method-conclusion">由此，“到达目标、全程安全、预算不超支”不再依赖事后统计，而成为每一步策略可感知的状态条件。</p>
+            </article>
+
+            <article class="method-section reveal">
+              <h3>双 Critic 与条件策略优化：按可行性决定优化重点</h3>
+              <p>Reachability Critic 估计当前增广状态下满足安全到达与预算条件的可行性；Cost Critic 估计对应策略的累计执行成本。二者分开学习，避免成本优化掩盖安全可行性。</p>
+              <div class="conditional-logic" aria-label="条件策略优化逻辑">
+                <div><strong>可行状态</strong><span>保持可达性约束，优先降低累计执行成本。</span></div>
+                <div><strong>受约束状态</strong><span>优先恢复或扩大安全可行区域，而非继续压低成本。</span></div>
+              </div>
+              <p class="method-conclusion">策略因此不是固定地折中安全与效率，而是根据当前状态与剩余预算切换优化目标。</p>
+            </article>
+
+            <article class="method-section reveal">
+              <h3>分层闭环抽象：让导航决策落到可执行的四足运动</h3>
+              <p>高层策略只在低维速度命令空间中规划 \(u_t^{\mathrm{high}} = (v_x, v_y, \omega_z)\)。低层采用 PPO 与 Domain Randomization 训练鲁棒速度跟踪器，并在高层训练与部署阶段冻结，将速度命令稳定地转化为关节控制。</p>
+              <div class="closed-loop-flow" aria-label="分层闭环控制流程">
+                <span>状态与预算</span><i data-lucide="arrow-right" aria-hidden="true"></i><span>MCRA 高层策略</span><i data-lucide="arrow-right" aria-hidden="true"></i><span>速度命令</span><i data-lucide="arrow-right" aria-hidden="true"></i><span>冻结的低层跟踪器</span><i data-lucide="arrow-right" aria-hidden="true"></i><span>机器人闭环执行</span>
+              </div>
+              <p class="method-conclusion">冻结低层后，高层面对的是稳定的名义闭环接口，从而将高维接触控制与预算条件化导航决策解耦。</p>
+            </article>
+
+            <article class="method-section reveal">
+              <h3>数据驱动双裕度：把执行失配反馈给高层决策</h3>
+              <p>真实执行中的能耗、时间与轨迹会偏离名义模型。我们从闭环数据中分别估计成本超支与轨迹偏移的上分位数，形成成本裕度 \(\alpha\) 与安全裕度 \(\delta\)</p>
+              <div class="method-math">
+                \[
+                \tilde{c}(x_t, u_t) = (1 + \alpha)c(x_t, u_t), \qquad
+                F_{\delta} = \{x \in \mathcal{X} \mid d(x, F) \leq \delta\}.
+                \]
+              </div>
+              <p class="method-conclusion">成本裕度为预算预留执行余量，安全裕度扩大危险区域；二者将 sim-to-real 失配显式反馈到高层规划，而非仅依赖域随机化。</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section policy" id="policy" aria-labelledby="policy-mechanism-title">
+        <div class="page-shell policy-layout">
+          <div class="policy-reframed">
+            <div class="policy-header reveal">
+              <h2 id="policy-mechanism-title">策略机制：可行性如何决定动作</h2>
+              <p>HD-MCRA 不使用固定的安全权重来折中效率。策略在每一步先判断状态与剩余预算是否还处于安全可达的可行区域，再据此决定当前应优化成本，还是优先恢复可行性。</p>
+            </div>
+
+            <div class="decision-sequence">
+              <article class="decision-step reveal">
+                <h3>先以 Reachability Critic 判断当前任务是否仍然可行</h3>
+                <p>输入为增广状态 \( \hat{x}_t = (x_t, y_t, z_t) \)。Critic 综合当前位置、历史安全状态与剩余预算，评估机器人是否仍存在一条到达目标、全程避险且不超支的后续轨迹。</p>
+                <div class="decision-expression">
+                  \[
+                  \hat{x}_t \xrightarrow{\;\text{Reachability Critic}\;} \text{feasible or constrained}.
+                  \]
+                </div>
+              </article>
+
+              <article class="decision-step reveal">
+                <h3>可行时：在安全可达集合内继续降低执行成本</h3>
+                <p>当目标、安全与预算仍可同时满足时，策略交由 Cost Critic 引导，在不破坏可行性的前提下寻找更低成本的速度命令与路径选择。</p>
+                <p class="decision-conclusion">安全约束保持不变，优化重点转向累计执行成本。</p>
+              </article>
+
+              <article class="decision-step reveal">
+                <h3>受约束时：优先恢复或扩大安全可行区域</h3>
+                <p>当障碍距离、剩余预算或历史安全状态表明当前轨迹已接近失效，条件策略不再继续压低成本，而是优先选择能够提升可达性、增加安全间隙或保留预算余量的动作。</p>
+                <p class="decision-conclusion">成本最优只在可行性得到保障后才有意义。</p>
+              </article>
+            </div>
+          </div>
+          <div class="policy-intro reveal">
+            <h2 id="policy-title">同一策略，依据可行性改变优化重点。</h2>
+            <p>这不是一条固定安全权重曲线。高层策略先判断当前状态和剩余预算是否仍然可行，再决定优先降低成本，还是优先恢复可行性。</p>
+            <div class="policy-controls" role="tablist" aria-label="策略状态">
+              <button class="mode-control is-active" type="button" role="tab" aria-selected="true" data-mode="feasible">可行状态</button>
+              <button class="mode-control" type="button" role="tab" aria-selected="false" data-mode="constrained">受约束状态</button>
+            </div>
+          </div>
+
+          <div class="policy-flow reveal" data-policy-flow data-mode="feasible" aria-live="polite">
+            <div class="flow-node flow-node--state"><span>INPUT</span><strong>状态 x + 剩余预算 z</strong></div>
+            <div class="flow-connector" aria-hidden="true"></div>
+            <div class="flow-node flow-node--reach"><span>CRITIC</span><strong>Reachability Critic</strong><small>当前状态是否可行？</small></div>
+            <div class="flow-branches">
+              <div class="flow-branch flow-branch--cost">
+                <span class="branch-state">FEASIBLE</span>
+                <strong>Cost Critic</strong>
+                <p>优先降低累计执行成本。</p>
+              </div>
+              <div class="flow-branch flow-branch--recovery">
+                <span class="branch-state">CONSTRAINED</span>
+                <strong>Conditional Policy</strong>
+                <p>优先恢复或扩大安全可行性。</p>
+              </div>
+            </div>
+            <div class="flow-result"><i data-lucide="git-merge" aria-hidden="true"></i><span>条件策略更新</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section evidence" id="evidence" aria-labelledby="evidence-validation-title">
+        <div class="page-shell">
+          <div class="evidence-reframed">
+            <div class="evidence-header reveal">
+              <h2 id="evidence-validation-title">验证：从困难仿真到 AGIROS 实机</h2>
+              <p>验证不只报告单一成功率，而是依次检查任务完成、安全、执行成本、预算响应与真实闭环运行，说明各项机制为何必要、系统如何真实落地。</p>
+            </div>
+
+            <div class="evidence-sequence">
+              <article class="evidence-step reveal">
+                <h3>困难 IsaacGym 环境中的整体对比</h3>
+                <p>与 Reward Weighting、CMDP 和 Reach-Avoid 基线在统一场景中比较导航成功率、碰撞率、累计执行成本、预算违约率与安全间隙。</p>
+                <p class="evidence-result"><span>导航成功率提升约 <strong>20%</strong></span><span>平均执行成本降低约 <strong>30%</strong></span></p>
+                <div class="evidence-placeholder">
+                  <p>待补充：统一基线对比图，展示成功率、碰撞率、累计成本、预算违约率与安全间隙。</p>
+                </div>
+              </article>
+
+              <article class="evidence-step reveal">
+                <h3>消融与预算响应：验证每项机制的必要性</h3>
+                <p>去除分层闭环抽象、成本裕度 \(\alpha\) 或安全裕度 \(\delta\)，分别观察任务成功、安全间隙和预算可行性的变化；再改变初始预算，检验策略是否会在可行与受约束状态之间做出条件化响应。</p>
+                <div class="evidence-placeholder">
+                  <p>待补充：模块消融图，以及不同初始预算下的成功率、预算违约率和成本响应曲线。</p>
+                </div>
+              </article>
+
+              <article class="evidence-step evidence-step--physical reveal">
+                <h3>AGIROS 实机闭环验证</h3>
+                <p>真实四足机器人在室内障碍环境中完成安全导航。视频用于观察狭窄通道、椅子障碍与动态干扰下的安全间隙、稳定运动和闭环决策表现。</p>
+                <div class="evidence-video-wrap">
+                  <video class="evidence-video" controls muted preload="metadata" aria-label="AGIROS 实机导航展示视频">
+                    <source src="assets/agiro-demo.mp4" type="video/mp4" />
+                  </video>
+                </div>
+                <p class="field-summary">平台：Unitree Go2　观测：LiDAR、相对目标与机器人状态　关注：安全间隙、预算可行性与稳定运动</p>
+              </article>
+            </div>
+          </div>
+          <div class="section-heading reveal">
+            <div>
+              <h2 id="evidence-title">不是一个仿真指标，而是一条验证链路。</h2>
+            </div>
+            <p>从基线对比、模块消融和预算响应，到 AGIROS 实机部署，逐层说明系统为何有效、各模块为何必要、以及机器人如何真实运行。</p>
+          </div>
+
+          <div class="evidence-feature reveal">
+            <div class="evidence-video-wrap">
+              <video class="evidence-video" controls muted preload="metadata" aria-label="AGIROS 实机导航展示视频">
+                <source src="assets/agiro-demo.mp4" type="video/mp4" />
+              </video>
+              <span class="evidence-source">PHYSICAL DEPLOYMENT</span>
+            </div>
+            <div class="evidence-feature-copy">
+              <h3>实机环境中的狭窄通道、椅子障碍与动态干扰。</h3>
+              <p>视频展示真实四足机器人在室内障碍环境下完成安全导航。后续可替换为包含完整路径、场景标注和多视角序列的最终剪辑。</p>
+              <dl class="field-notes">
+                <div><dt>平台</dt><dd>Unitree Go2</dd></div>
+                <div><dt>观测</dt><dd>LiDAR、相对目标、机器人状态</dd></div>
+                <div><dt>关注点</dt><dd>安全间隙、成本预算与稳定运动</dd></div>
+              </dl>
+            </div>
+          </div>
+
+          <div class="evidence-grid stagger">
+            <article class="evidence-card reveal">
+              <div class="media-placeholder media-placeholder--chart">
+                <div class="placeholder-note"><span>SIMULATION / BASELINES</span>待替换：成功率、碰撞率、执行成本、预算违约率与安全间隙的基线对比图。</div>
+              </div>
+              <div class="evidence-card-copy"><h3>整体安全、成本与任务完成的平衡</h3><p>展示与 Reward Weighting、CMDP、Reach-Avoid 方法的统一比较。</p></div>
+            </article>
+            <article class="evidence-card reveal">
+              <div class="media-placeholder media-placeholder--chart">
+                <div class="placeholder-note"><span>SIMULATION / ABLATION</span>待替换：去除分层、&alpha;、&delta; 后的消融结果图或表格。</div>
+              </div>
+              <div class="evidence-card-copy"><h3>分层与双裕度的独立作用</h3><p>用一个图回答每项机制为系统带来的具体收益。</p></div>
+            </article>
+            <article class="evidence-card reveal">
+              <div class="media-placeholder media-placeholder--chart">
+                <div class="placeholder-note"><span>SIMULATION / BUDGET</span>待替换：不同初始预算下的成功率、预算违约率与成本响应曲线。</div>
+              </div>
+              <div class="evidence-card-copy"><h3>预算变化下的条件策略响应</h3><p>证明策略会随可行预算调整，而不是采用静态权重。</p></div>
+            </article>
+            <article class="evidence-card reveal">
+              <div class="media-placeholder media-placeholder--sequence">
+                <div class="placeholder-note"><span>PHYSICAL / SEQUENCE</span>待替换：6-8 帧实机连续图。需完整呈现机器人、障碍物与运动方向。</div>
+              </div>
+              <div class="evidence-card-copy"><h3>从仿真到 AGIROS 实机展示</h3><p>以连续图补充视频，展示环境约束与实际执行路径。</p></div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="page-shell footer-shell">
+        <div><p class="eyebrow"><span></span> MCRA QUADRUPED NAVIGATION</p><p>从 MCRA 形式化建模、可行性驱动学习和分层闭环控制，到数据驱动鲁棒化与 AGIROS 实机验证。</p></div>
+        <p class="footer-meta">中科院软件研究所<br />项目展示网页</p>
+      </div>
+    </footer>
+
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

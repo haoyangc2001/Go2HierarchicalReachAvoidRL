@@ -1,5 +1,9 @@
 # Go2 Hierarchical Reach-Avoid RL
 
+## Project Website
+
+The static project presentation is in [webui](webui/). It can be deployed to GitHub Pages with the included workflow.
+
 <p align="center">
   <img src="logs/1.gif" alt="Go2 Hierarchical Reach-Avoid RL demo">
 </p>

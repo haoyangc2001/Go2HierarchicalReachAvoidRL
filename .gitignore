@@ -14,3 +14,4 @@ legged_gym_go2/legged_gym/scripts/logs/high_level_go2/
 .vscode/launch.json
 change-list.txt
 AGENTS.md
+.playwright-cli/
